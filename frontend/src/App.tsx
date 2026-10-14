@@ -1,5 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import AuthProvider from "./components/AuthProvider";
 import Layout from "./components/Layout";
@@ -11,7 +11,10 @@ import RecommendationsPage from "./pages/RecommendationsPage";
 import ReviewsPage from "./pages/ReviewsPage";
 import SettingsPage from "./pages/SettingsPage";
 import SolvesPage from "./pages/SolvesPage";
-import TopicsPage from "./pages/TopicsPage";
+import { Loading } from "./components/ui";
+
+// Recharts is heavy: load the topics page (the only one with charts) on demand.
+const TopicsPage = lazy(() => import("./pages/TopicsPage"));
 
 export function AppRoutes() {
   return (
@@ -22,7 +25,14 @@ export function AppRoutes() {
         <Route element={<Layout />}>
           <Route index element={<DashboardPage />} />
           <Route path="solves" element={<SolvesPage />} />
-          <Route path="topics" element={<TopicsPage />} />
+          <Route
+            path="topics"
+            element={
+              <Suspense fallback={<Loading />}>
+                <TopicsPage />
+              </Suspense>
+            }
+          />
           <Route path="reviews" element={<ReviewsPage />} />
           <Route path="recommendations" element={<RecommendationsPage />} />
           <Route path="settings" element={<SettingsPage />} />
