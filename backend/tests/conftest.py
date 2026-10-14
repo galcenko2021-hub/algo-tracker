@@ -1,7 +1,11 @@
+import json
 import os
 from collections.abc import Callable, Iterator
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 
+import httpx
 import pytest
 from alembic import command
 from alembic.config import Config
@@ -14,6 +18,7 @@ from app.db import get_db
 from app.main import app
 from app.models import Base
 from app.ratelimit import limiter
+from app.services.codeforces import CodeforcesClient, Throttle, get_codeforces_client
 
 TEST_DATABASE_URL = os.environ.get(
     "TEST_DATABASE_URL", "postgresql+psycopg://algo:algo@localhost:5432/algo_test"
@@ -106,3 +111,48 @@ def set_now() -> Iterator[Callable[[str], None]]:
 
     yield _set
     app.dependency_overrides.pop(get_now, None)
+
+
+FIXTURES = Path(__file__).parent / "fixtures"
+
+
+def load_fixture(name: str) -> Any:
+    return json.loads((FIXTURES / name).read_text(encoding="utf-8"))
+
+
+class CfMock:
+    """Stands in for codeforces.com: tests never touch the network."""
+
+    def __init__(self) -> None:
+        self.requests: list[httpx.Request] = []
+        self.sleeps: list[float] = []
+        self.responses: dict[str, Any] = {}
+
+    def handler(self, request: httpx.Request) -> httpx.Response:
+        self.requests.append(request)
+        route = request.url.path.rsplit("/", 1)[-1]
+        response = self.responses[route]
+        if isinstance(response, Exception):
+            raise response
+        if callable(response):
+            result: httpx.Response = response(request)
+            return result
+        return httpx.Response(200, json=response)
+
+    def client(self) -> CodeforcesClient:
+        return CodeforcesClient(
+            base_url="https://cf.test/api",
+            throttle=Throttle(0),
+            transport=httpx.MockTransport(self.handler),
+            sleep=self.sleeps.append,
+        )
+
+
+@pytest.fixture
+def cf() -> Iterator[CfMock]:
+    mock = CfMock()
+    mock.responses["user.status"] = load_fixture("cf_user_status.json")
+    mock.responses["problemset.problems"] = load_fixture("cf_problemset.json")
+    app.dependency_overrides[get_codeforces_client] = mock.client
+    yield mock
+    app.dependency_overrides.pop(get_codeforces_client, None)

@@ -1,0 +1,90 @@
+{
+ "status": "OK",
+ "result": {
+  "problems": [
+   {
+    "contestId": 1700,
+    "index": "A",
+    "name": "Optimal Path",
+    "type": "PROGRAMMING",
+    "points": 500.0,
+    "tags": [
+     "math",
+     "greedy"
+    ],
+    "rating": 800
+   },
+   {
+    "contestId": 1700,
+    "index": "B",
+    "name": "Palindromic Numbers",
+    "type": "PROGRAMMING",
+    "points": 500.0,
+    "tags": [
+     "implementation"
+    ],
+    "rating": 1000
+   },
+   {
+    "contestId": 1701,
+    "index": "C",
+    "name": "Schedule Management",
+    "type": "PROGRAMMING",
+    "points": 500.0,
+    "tags": [
+     "dp"
+    ]
+   },
+   {
+    "contestId": 1800,
+    "index": "D",
+    "name": "Remove Two Letters",
+    "type": "PROGRAMMING",
+    "points": 500.0,
+    "tags": [
+     "data structures",
+     "strings"
+    ],
+    "rating": 1300
+   },
+   {
+    "contestId": 100500,
+    "index": "A",
+    "name": "Gym Problem",
+    "type": "PROGRAMMING",
+    "points": 500.0,
+    "tags": [
+     "math"
+    ],
+    "rating": 1500
+   }
+  ],
+  "problemStatistics": [
+   {
+    "contestId": 1700,
+    "index": "A",
+    "solvedCount": 50000
+   },
+   {
+    "contestId": 1700,
+    "index": "B",
+    "solvedCount": 30000
+   },
+   {
+    "contestId": 1701,
+    "index": "C",
+    "solvedCount": 12000
+   },
+   {
+    "contestId": 1800,
+    "index": "D",
+    "solvedCount": 9000
+   },
+   {
+    "contestId": 100500,
+    "index": "A",
+    "solvedCount": 10
+   }
+  ]
+ }
+}
