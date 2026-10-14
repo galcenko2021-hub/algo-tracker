@@ -1,5 +1,6 @@
 import os
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
+from datetime import datetime
 
 import pytest
 from alembic import command
@@ -8,6 +9,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.api.deps import get_now
 from app.db import get_db
 from app.main import app
 from app.models import Base
@@ -92,3 +94,15 @@ def user_a(client: TestClient) -> dict[str, str]:
 @pytest.fixture
 def user_b(client: TestClient) -> dict[str, str]:
     return register(client, "b@example.com")
+
+
+@pytest.fixture
+def set_now() -> Iterator[Callable[[str], None]]:
+    """Pin the server clock, e.g. set_now("2026-10-14T12:00:00+00:00")."""
+
+    def _set(iso: str) -> None:
+        moment = datetime.fromisoformat(iso)
+        app.dependency_overrides[get_now] = lambda: moment
+
+    yield _set
+    app.dependency_overrides.pop(get_now, None)

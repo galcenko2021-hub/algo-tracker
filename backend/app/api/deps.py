@@ -1,4 +1,6 @@
+from datetime import UTC, date, datetime
 from typing import Annotated
+from zoneinfo import ZoneInfo
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -33,3 +35,15 @@ def get_current_user(
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
+
+
+def get_now() -> datetime:
+    """Current time; a dependency so tests can pin it."""
+    return datetime.now(UTC)
+
+
+Now = Annotated[datetime, Depends(get_now)]
+
+
+def local_today(now: datetime, user: User) -> date:
+    return now.astimezone(ZoneInfo(user.timezone)).date()
