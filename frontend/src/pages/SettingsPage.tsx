@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { api } from "../api/endpoints";
-import { Button, Card, ErrorMessage, Field, PageTitle } from "../components/ui";
+import { Button, Card, ErrorMessage, Field, PageTitle, SectionTitle } from "../components/ui";
 import { useImportCodeforces } from "../hooks/queries";
 import { useAuth } from "../lib/auth-context";
 import { errorMessage } from "../lib/errors";
@@ -73,12 +73,14 @@ export default function SettingsPage() {
 
   return (
     <div className="flex max-w-2xl flex-col gap-6">
-      <PageTitle>Настройки</PageTitle>
+      <PageTitle hint="Профиль, импорт истории и выгрузка данных.">Настройки</PageTitle>
 
       <Card>
         <form onSubmit={onSave} className="flex flex-col gap-4">
-          <h2 className="font-mono text-base">Профиль</h2>
-          <p className="text-sm text-muted">Аккаунт: {user?.email}</p>
+          <div>
+            <SectionTitle>Профиль</SectionTitle>
+            <p className="mt-0.5 text-sm text-muted">Аккаунт: {user?.email}</p>
+          </div>
           <Field label="Хэндл на Codeforces" htmlFor="cf-handle">
             <input
               id="cf-handle"
@@ -117,8 +119,8 @@ export default function SettingsPage() {
       </Card>
 
       <Card>
-        <h2 className="mb-2 font-mono text-base">Импорт с Codeforces</h2>
-        <p className="mb-3 text-sm text-muted">
+        <SectionTitle>Импорт с Codeforces</SectionTitle>
+        <p className="mb-4 mt-1 max-w-prose text-sm text-muted">
           Загружает ваши принятые посылки как решения и все попытки для рекомендаций. Повторный
           запуск ничего не дублирует. Хэндл берётся из профиля (сначала сохраните его выше).
         </p>
@@ -137,17 +139,20 @@ export default function SettingsPage() {
           </div>
         )}
         {importer.data && (
-          <p role="status" className="mt-3 text-sm">
-            Готово: добавлено решений — <span className="font-mono">{importer.data.imported}</span>,
-            пропущено (уже были) — <span className="font-mono">{importer.data.skipped}</span>,
-            записано попыток — <span className="font-mono">{importer.data.attempts_recorded}</span>.
+          <p role="status" className="mt-4 rounded-lg bg-ok/10 px-4 py-3 text-sm">
+            Готово: добавлено решений —{" "}
+            <span className="font-semibold">{importer.data.imported}</span>, пропущено (уже были) —{" "}
+            <span className="font-semibold">{importer.data.skipped}</span>, записано попыток —{" "}
+            <span className="font-semibold">{importer.data.attempts_recorded}</span>.
           </p>
         )}
       </Card>
 
       <Card>
-        <h2 className="mb-2 font-mono text-base">Экспорт данных</h2>
-        <p className="mb-3 text-sm text-muted">Скачать профиль и все решения одним JSON-файлом.</p>
+        <SectionTitle>Экспорт данных</SectionTitle>
+        <p className="mb-4 mt-1 text-sm text-muted">
+          Скачать профиль и все решения одним JSON-файлом.
+        </p>
         <Button variant="secondary" disabled={exporting} onClick={() => void onExport()}>
           {exporting ? "Готовим файл…" : "Скачать JSON"}
         </Button>

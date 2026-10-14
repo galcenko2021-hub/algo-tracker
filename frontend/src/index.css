@@ -1,44 +1,55 @@
+@import "@fontsource-variable/onest";
 @import "tailwindcss";
 
-/* Dark by default, light follows prefers-color-scheme. One accent colour (sky blue). */
+/*
+ * "Practice notebook" palette: pale sage paper, graphite ink and one muted ink-blue accent.
+ * Light by default, dark follows prefers-color-scheme. Status colours (brick, ochre, moss)
+ * are desaturated so nothing on the page shouts.
+ */
 :root {
-  color-scheme: dark;
-  --bg: #0d1117;
-  --surface: #161b22;
-  --surface-2: #1f2630;
-  --line: #30363d;
-  --fg: #e6edf3;
-  --muted: #8b949e;
-  --accent: #38bdf8;
-  --accent-fg: #04121c;
-  --danger: #f87171;
-  --ok: #4ade80;
+  color-scheme: light;
+  --bg: #eff1ee;
+  --surface: #fafbf9;
+  --surface-2: #e8ebe7;
+  --line: #d8ddd7;
+  --line-strong: #bfc6bf;
+  --fg: #1f2528;
+  --muted: #5f6a66;
+  --accent: #42597a;
+  --accent-soft: #e1e7ee;
+  --accent-fg: #f7f9fb;
+  --danger: #9e4a41;
+  --warn: #8a6d36;
+  --ok: #4c7150;
   /* Heatmap: one hue, five steps that differ in lightness (safe for colour-blind users). */
-  --heat-0: #1b222c;
-  --heat-1: #0c4a6e;
-  --heat-2: #0369a1;
-  --heat-3: #0ea5e9;
-  --heat-4: #bae6fd;
+  --heat-0: #e1e5e0;
+  --heat-1: #c4cfdb;
+  --heat-2: #93a7bf;
+  --heat-3: #607b9c;
+  --heat-4: #34496a;
 }
 
-@media (prefers-color-scheme: light) {
+@media (prefers-color-scheme: dark) {
   :root {
-    color-scheme: light;
-    --bg: #f6f8fa;
-    --surface: #ffffff;
-    --surface-2: #eef1f4;
-    --line: #d0d7de;
-    --fg: #1f2328;
-    --muted: #59636e;
-    --accent: #0369a1;
-    --accent-fg: #ffffff;
-    --danger: #cf222e;
-    --ok: #1a7f37;
-    --heat-0: #e6ebf0;
-    --heat-1: #bae6fd;
-    --heat-2: #38bdf8;
-    --heat-3: #0284c7;
-    --heat-4: #0c4a6e;
+    color-scheme: dark;
+    --bg: #15181b;
+    --surface: #1c2024;
+    --surface-2: #252a2f;
+    --line: #2d3338;
+    --line-strong: #3e464d;
+    --fg: #dde2e4;
+    --muted: #8f999f;
+    --accent: #9fb4d0;
+    --accent-soft: #232e3a;
+    --accent-fg: #14191f;
+    --danger: #d4918a;
+    --warn: #c9ae78;
+    --ok: #98b998;
+    --heat-0: #23282d;
+    --heat-1: #2c3b4e;
+    --heat-2: #41597a;
+    --heat-3: #6884a9;
+    --heat-4: #a6bbd8;
   }
 }
 
@@ -47,12 +58,16 @@
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
   --color-fg: var(--fg);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
   --color-accent-fg: var(--accent-fg);
   --color-danger: var(--danger);
+  --color-warn: var(--warn);
   --color-ok: var(--ok);
+  --font-sans: "Onest Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
 }
 
@@ -65,18 +80,38 @@ body,
 body {
   background: var(--bg);
   color: var(--fg);
-  font-family:
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  font-feature-settings: "tnum" 1;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.012em;
+  line-height: 1.25;
+}
+
+::selection {
+  background: var(--accent-soft);
 }
 
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.55;
+}
+
+@media (prefers-color-scheme: dark) {
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.85);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

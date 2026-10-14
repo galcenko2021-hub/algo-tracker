@@ -15,7 +15,7 @@ import {
 import { useDeleteSolve, useSolves } from "../hooks/queries";
 import { useAuth } from "../lib/auth-context";
 import { formatInstant } from "../lib/format";
-import { inputClass } from "../lib/styles";
+import { inputClass, labelClass, linkClass } from "../lib/styles";
 import { PLATFORM_LABELS } from "../lib/validation";
 
 const PAGE_SIZE = 20;
@@ -84,15 +84,15 @@ export default function SolvesPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <PageTitle>Решения</PageTitle>
-        <Button onClick={() => setEditing("new")}>+ Добавить решение</Button>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <PageTitle hint="Все задачи, которые вы решили, с тегами и заметками.">Решения</PageTitle>
+        <Button onClick={() => setEditing("new")}>Добавить решение</Button>
       </div>
 
       <Card>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="flex flex-col gap-1">
-            <label htmlFor="filter-q" className="text-sm text-muted">
+            <label htmlFor="filter-q" className={labelClass}>
               Поиск
             </label>
             <input
@@ -104,7 +104,7 @@ export default function SolvesPage() {
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label htmlFor="filter-platform" className="text-sm text-muted">
+            <label htmlFor="filter-platform" className={labelClass}>
               Платформа
             </label>
             <select
@@ -122,7 +122,7 @@ export default function SolvesPage() {
             </select>
           </div>
           <div className="flex flex-col gap-1">
-            <label htmlFor="filter-from" className="text-sm text-muted">
+            <label htmlFor="filter-from" className={labelClass}>
               С даты
             </label>
             <input
@@ -134,7 +134,7 @@ export default function SolvesPage() {
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label htmlFor="filter-to" className="text-sm text-muted">
+            <label htmlFor="filter-to" className={labelClass}>
               По дату
             </label>
             <input
@@ -146,7 +146,7 @@ export default function SolvesPage() {
             />
           </div>
           <div className="flex flex-col gap-1 sm:col-span-2 lg:col-span-4">
-            <label htmlFor="filter-tags" className="text-sm text-muted">
+            <label htmlFor="filter-tags" className={labelClass}>
               Теги (должны быть все)
             </label>
             <TagInput id="filter-tags" value={tags} onChange={(next) => update({ tag: next })} />
@@ -155,7 +155,7 @@ export default function SolvesPage() {
         {hasFilters && (
           <button
             type="button"
-            className="mt-3 text-sm text-accent underline"
+            className={`mt-4 text-sm ${linkClass}`}
             onClick={() => {
               setSearch("");
               setParams({}, { replace: true });
@@ -185,61 +185,68 @@ export default function SolvesPage() {
 
       {data && data.items.length > 0 && (
         <>
-          <div className="overflow-x-auto rounded-lg border border-line">
+          <div className="overflow-x-auto rounded-xl border border-line bg-surface">
             <table className="w-full min-w-[40rem] text-left text-sm">
-              <thead className="bg-surface-2 text-xs uppercase text-muted">
+              <thead className="border-b border-line text-[13px] text-muted">
                 <tr>
-                  <th className="px-3 py-2">Дата</th>
-                  <th className="px-3 py-2">Задача</th>
-                  <th className="px-3 py-2">Платформа</th>
-                  <th className="px-3 py-2 text-right">Рейтинг</th>
-                  <th className="px-3 py-2">Теги</th>
-                  <th className="px-3 py-2 text-right">Действия</th>
+                  <th className="px-4 py-3 font-medium">Дата</th>
+                  <th className="px-4 py-3 font-medium">Задача</th>
+                  <th className="px-4 py-3 font-medium">Платформа</th>
+                  <th className="px-4 py-3 text-right font-medium">Рейтинг</th>
+                  <th className="px-4 py-3 font-medium">Теги</th>
+                  <th className="px-4 py-3 text-right font-medium">
+                    <span className="sr-only">Действия</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {data.items.map((solve) => (
-                  <tr key={solve.id} className="border-t border-line align-top">
-                    <td className="whitespace-nowrap px-3 py-2 font-mono">
+                  <tr
+                    key={solve.id}
+                    className="group border-t border-line align-top transition-colors first:border-t-0 hover:bg-bg/60"
+                  >
+                    <td className="whitespace-nowrap px-4 py-3 text-muted">
                       {formatInstant(solve.solved_at, timezone)}
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-4 py-3">
                       {solve.problem.url ? (
                         <a
                           href={solve.problem.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="font-mono text-accent hover:underline"
+                          className="font-medium text-fg underline decoration-line-strong underline-offset-[3px] hover:decoration-accent"
                         >
                           {solve.problem.title}
                         </a>
                       ) : (
-                        <span className="font-mono">{solve.problem.title}</span>
+                        <span className="font-medium">{solve.problem.title}</span>
                       )}
-                      {solve.notes && <p className="mt-0.5 text-xs text-muted">{solve.notes}</p>}
+                      {solve.notes && (
+                        <p className="mt-0.5 max-w-xs text-[13px] text-muted">{solve.notes}</p>
+                      )}
                     </td>
-                    <td className="px-3 py-2">{PLATFORM_LABELS[solve.problem.platform]}</td>
-                    <td className="px-3 py-2 text-right font-mono">
-                      {solve.problem.rating ?? "—"}
+                    <td className="px-4 py-3 text-muted">
+                      {PLATFORM_LABELS[solve.problem.platform]}
                     </td>
-                    <td className="px-3 py-2">
+                    <td className="px-4 py-3 text-right">{solve.problem.rating ?? "—"}</td>
+                    <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-1">
                         {solve.problem.tags.map((tag) => (
                           <Badge key={tag}>{tag}</Badge>
                         ))}
                       </div>
                     </td>
-                    <td className="whitespace-nowrap px-3 py-2 text-right">
+                    <td className="whitespace-nowrap px-4 py-3 text-right text-[13px]">
                       <button
                         type="button"
-                        className="mr-3 text-accent hover:underline"
+                        className="mr-3 text-muted transition-colors hover:text-accent"
                         onClick={() => setEditing(solve)}
                       >
                         Изменить
                       </button>
                       <button
                         type="button"
-                        className="text-danger hover:underline"
+                        className="text-muted transition-colors hover:text-danger"
                         onClick={() => confirmDelete(solve)}
                       >
                         Удалить
@@ -252,7 +259,7 @@ export default function SolvesPage() {
           </div>
           <nav aria-label="Страницы" className="flex items-center justify-between text-sm">
             <span className="text-muted">
-              Всего: <span className="font-mono">{data.total}</span>
+              Всего: <span className="font-medium text-fg">{data.total}</span>
             </span>
             <div className="flex items-center gap-2">
               <Button
@@ -262,8 +269,8 @@ export default function SolvesPage() {
               >
                 ← Назад
               </Button>
-              <span className="font-mono">
-                {page} / {pages}
+              <span className="min-w-14 text-center text-muted">
+                {page} из {pages}
               </span>
               <Button
                 variant="secondary"

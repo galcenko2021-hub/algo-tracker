@@ -12,6 +12,7 @@ import ReviewsPage from "./pages/ReviewsPage";
 import SettingsPage from "./pages/SettingsPage";
 import SolvesPage from "./pages/SolvesPage";
 import { Loading } from "./components/ui";
+import { linkClass } from "./lib/styles";
 
 // Recharts is heavy: load the topics page (the only one with charts) on demand.
 const TopicsPage = lazy(() => import("./pages/TopicsPage"));
@@ -45,10 +46,10 @@ export function AppRoutes() {
 
 function NotFound() {
   return (
-    <div className="mx-auto max-w-sm p-10 text-center">
-      <p className="font-mono text-2xl">404</p>
-      <p className="mt-2 text-muted">Такой страницы нет.</p>
-      <a href="/" className="mt-4 inline-block text-accent underline">
+    <div className="mx-auto flex min-h-screen max-w-sm flex-col items-center justify-center p-10 text-center">
+      <p className="text-5xl font-light tracking-tight text-muted">404</p>
+      <p className="mt-3">Такой страницы нет.</p>
+      <a href="/" className={`mt-5 inline-block text-sm ${linkClass}`}>
         На главную
       </a>
     </div>

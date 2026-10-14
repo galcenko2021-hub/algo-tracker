@@ -38,13 +38,13 @@ export default function TagInput({ id, value, onChange, placeholder }: TagInputP
           {value.map((tag) => (
             <li
               key={tag}
-              className="inline-flex items-center gap-1 rounded-full border border-line bg-surface-2 px-2 py-0.5 font-mono text-xs"
+              className="inline-flex items-center gap-1 rounded bg-accent-soft py-px pl-2 pr-1 text-xs leading-5 text-accent"
             >
               {tag}
               <button
                 type="button"
                 aria-label={`Удалить тег ${tag}`}
-                className="text-muted hover:text-danger"
+                className="rounded px-1 text-accent/70 transition-colors hover:bg-accent/10 hover:text-accent"
                 onClick={() => onChange(value.filter((t) => t !== tag))}
               >
                 ×

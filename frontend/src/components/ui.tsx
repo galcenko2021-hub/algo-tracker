@@ -1,18 +1,20 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { errorMessage } from "../lib/errors";
+import { labelClass } from "../lib/styles";
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-lg border border-line bg-surface p-4 ${className}`}>{children}</div>
+    <div className={`rounded-xl border border-line bg-surface p-5 ${className}`}>{children}</div>
   );
 }
 
-type Variant = "primary" | "secondary" | "danger";
+type Variant = "primary" | "secondary" | "ghost" | "danger";
 
 const VARIANTS: Record<Variant, string> = {
-  primary: "bg-accent text-accent-fg hover:opacity-90",
-  secondary: "border border-line bg-surface-2 text-fg hover:border-accent",
-  danger: "border border-danger text-danger hover:bg-danger hover:text-accent-fg",
+  primary: "bg-accent text-accent-fg hover:bg-accent/90",
+  secondary: "border border-line bg-surface text-fg hover:border-line-strong hover:bg-surface-2",
+  ghost: "text-muted hover:bg-surface-2 hover:text-fg",
+  danger: "border border-danger/40 text-danger hover:bg-danger/10",
 };
 
 export function Button({
@@ -24,15 +26,15 @@ export function Button({
     <button
       type="button"
       {...props}
-      className={`inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${VARIANTS[variant]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${VARIANTS[variant]} ${className}`}
     />
   );
 }
 
 export function Loading({ label = "Загрузка…" }: { label?: string }) {
   return (
-    <div role="status" className="flex items-center gap-2 p-6 text-sm text-muted">
-      <span className="h-4 w-4 animate-spin rounded-full border-2 border-line border-t-accent" />
+    <div role="status" className="flex items-center gap-2.5 py-6 text-sm text-muted">
+      <span className="h-3.5 w-3.5 animate-spin rounded-full border-[1.5px] border-line-strong border-t-accent" />
       {label}
     </div>
   );
@@ -42,7 +44,7 @@ export function ErrorMessage({ error, onRetry }: { error: unknown; onRetry?: () 
   return (
     <div
       role="alert"
-      className="flex flex-wrap items-center gap-3 rounded-md border border-danger/50 bg-danger/10 p-3 text-sm text-danger"
+      className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-danger/30 bg-danger/[0.06] px-4 py-3 text-sm text-danger"
     >
       <span>{errorMessage(error)}</span>
       {onRetry && (
@@ -64,10 +66,10 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-dashed border-line p-8 text-center">
-      <p className="font-mono text-base">{title}</p>
-      {hint && <p className="mt-1 text-sm text-muted">{hint}</p>}
-      {action && <div className="mt-4">{action}</div>}
+    <div className="rounded-xl border border-dashed border-line-strong px-6 py-12 text-center">
+      <p className="text-base font-medium">{title}</p>
+      {hint && <p className="mx-auto mt-1.5 max-w-md text-sm text-muted">{hint}</p>}
+      {action && <div className="mt-5">{action}</div>}
     </div>
   );
 }
@@ -79,9 +81,10 @@ export function Badge({
   children: ReactNode;
   tone?: "muted" | "accent";
 }) {
-  const style = tone === "accent" ? "border-accent text-accent" : "border-line text-muted";
+  const style =
+    tone === "accent" ? "bg-accent-soft text-accent font-medium" : "bg-surface-2 text-muted";
   return (
-    <span className={`inline-block rounded-full border px-2 py-0.5 font-mono text-xs ${style}`}>
+    <span className={`inline-block rounded px-1.5 py-px text-xs leading-5 ${style}`}>
       {children}
     </span>
   );
@@ -99,8 +102,8 @@ export function Field({
   htmlFor: string;
 }) {
   return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={htmlFor} className="text-sm text-muted">
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={htmlFor} className={labelClass}>
         {label}
       </label>
       {children}
@@ -113,6 +116,15 @@ export function Field({
   );
 }
 
-export function PageTitle({ children }: { children: ReactNode }) {
-  return <h1 className="mb-4 font-mono text-xl font-semibold">{children}</h1>;
+export function PageTitle({ children, hint }: { children: ReactNode; hint?: ReactNode }) {
+  return (
+    <div className="mb-1">
+      <h1 className="text-[26px] font-semibold">{children}</h1>
+      {hint && <p className="mt-1 text-sm text-muted">{hint}</p>}
+    </div>
+  );
+}
+
+export function SectionTitle({ children }: { children: ReactNode }) {
+  return <h2 className="text-base font-semibold">{children}</h2>;
 }

@@ -1,13 +1,13 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { HeatmapDay } from "../api/types";
 import { monthShort } from "../lib/format";
 import { addDays, buildGrid, cellLabel, monthLabels, type Cell } from "../lib/heatmap";
 
-const CELL = 12;
+const CELL = 13;
 const GAP = 3;
 const STEP = CELL + GAP;
-const LEFT = 28;
-const TOP = 18;
+const LEFT = 30;
+const TOP = 20;
 const WEEKDAY_LABELS: [number, string][] = [
   [0, "Пн"],
   [2, "Ср"],
@@ -27,8 +27,15 @@ export default function Heatmap({ days, end, weeks = 53 }: HeatmapProps) {
   const byDate = useMemo(() => new Map(cells.map((c) => [c.date, c])), [cells]);
   const months = useMemo(() => monthLabels(cells), [cells]);
   const svgRef = useRef<SVGSVGElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [tabStop, setTabStop] = useState(end);
   const [active, setActive] = useState<Cell | null>(null);
+
+  // On narrow screens the grid scrolls: start at the most recent weeks, not a year ago.
+  useEffect(() => {
+    const box = scrollRef.current;
+    if (box) box.scrollLeft = box.scrollWidth;
+  }, [weeks, end]);
 
   const width = LEFT + weeks * STEP;
   const height = TOP + 7 * STEP;
@@ -50,7 +57,7 @@ export default function Heatmap({ days, end, weeks = 53 }: HeatmapProps) {
 
   return (
     <div>
-      <div className="overflow-x-auto pb-2">
+      <div ref={scrollRef} className="overflow-x-auto pb-2">
         <div className="relative inline-block" style={{ width, height }}>
           <svg
             ref={svgRef}
@@ -65,7 +72,7 @@ export default function Heatmap({ days, end, weeks = 53 }: HeatmapProps) {
                 key={`${week}-${month}`}
                 x={LEFT + week * STEP}
                 y={11}
-                fontSize={10}
+                fontSize={11}
                 fill="var(--muted)"
               >
                 {monthShort(month)}
@@ -76,7 +83,7 @@ export default function Heatmap({ days, end, weeks = 53 }: HeatmapProps) {
                 key={label}
                 x={0}
                 y={TOP + row * STEP + CELL - 2}
-                fontSize={10}
+                fontSize={11}
                 fill="var(--muted)"
               >
                 {label}
@@ -94,11 +101,11 @@ export default function Heatmap({ days, end, weeks = 53 }: HeatmapProps) {
                 y={TOP + cell.weekday * STEP}
                 width={CELL}
                 height={CELL}
-                rx={2}
+                rx={3}
                 fill={`var(--heat-${cell.level})`}
-                className="outline-none focus-visible:stroke-[var(--accent)]"
-                strokeWidth={active?.date === cell.date ? 2 : 0}
-                stroke="var(--accent)"
+                className="outline-none focus-visible:stroke-[var(--fg)]"
+                strokeWidth={active?.date === cell.date ? 1.5 : 0}
+                stroke="var(--fg)"
                 onMouseEnter={() => setActive(cell)}
                 onMouseLeave={() => setActive(null)}
                 onFocus={() => {
@@ -118,10 +125,10 @@ export default function Heatmap({ days, end, weeks = 53 }: HeatmapProps) {
           {active && (
             <div
               role="tooltip"
-              className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded border border-line bg-surface-2 px-2 py-1 font-mono text-xs"
+              className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-md bg-fg px-2 py-1 text-xs font-medium text-bg shadow-sm"
               style={{
                 left: LEFT + active.week * STEP + CELL / 2,
-                top: TOP + active.weekday * STEP - 4,
+                top: TOP + active.weekday * STEP - 6,
               }}
             >
               {cellLabel(active)}
@@ -130,14 +137,14 @@ export default function Heatmap({ days, end, weeks = 53 }: HeatmapProps) {
         </div>
       </div>
       <div
-        className="mt-1 flex items-center justify-end gap-1 text-xs text-muted"
+        className="mt-2 flex items-center justify-end gap-1.5 text-xs text-muted"
         aria-hidden="true"
       >
         <span>Меньше</span>
         {[0, 1, 2, 3, 4].map((level) => (
           <span
             key={level}
-            className="inline-block h-3 w-3 rounded-sm"
+            className="inline-block h-[11px] w-[11px] rounded-[3px]"
             style={{ background: `var(--heat-${level})` }}
           />
         ))}

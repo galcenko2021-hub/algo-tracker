@@ -72,16 +72,16 @@ export default function SolveFormModal({ solve, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#1f2528]/40 p-4 backdrop-blur-[2px]"
       onMouseDown={(event) => event.target === event.currentTarget && onClose()}
     >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="solve-form-title"
-        className="my-8 w-full max-w-xl rounded-lg border border-line bg-surface p-5"
+        className="my-10 w-full max-w-xl rounded-xl border border-line bg-surface p-6 shadow-[0_24px_60px_-20px_rgb(20_28_36/0.35)]"
       >
-        <h2 id="solve-form-title" className="mb-4 font-mono text-lg">
+        <h2 id="solve-form-title" className="mb-5 text-lg font-semibold">
           {isEdit ? "Редактировать решение" : "Добавить решение"}
         </h2>
         <form onSubmit={onSubmit} noValidate className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -180,7 +180,7 @@ export default function SolveFormModal({ solve, onClose }: Props) {
               <ErrorMessage error={mutation.error} />
             </div>
           )}
-          <div className="flex justify-end gap-2 sm:col-span-2">
+          <div className="mt-1 flex justify-end gap-2 border-t border-line pt-4 sm:col-span-2">
             <Button variant="secondary" onClick={onClose}>
               Отмена
             </Button>
