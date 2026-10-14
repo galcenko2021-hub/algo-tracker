@@ -8,7 +8,7 @@ Login: demo@example.com / demo12345
 """
 
 import random
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 
 from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
@@ -23,6 +23,7 @@ DEMO_EMAIL = "demo@example.com"
 DEMO_PASSWORD = "demo12345"
 HISTORY_DAYS = 183
 OVERDUE_CARDS = 6
+SKIP_PROBABILITY = 0.015
 
 TOPICS = {
     "dp": ["Knapsack variation", "Longest path in a grid", "Coin change twist", "Stairs counting"],
@@ -115,19 +116,27 @@ def seed(db: Session, now: datetime | None = None, seed_value: int = 42) -> User
 def _simulate_reviews(
     db: Session, user: User, rng: random.Random, now: datetime, today: date
 ) -> None:
-    """Give ~40% of the cards a review history and leave a few of them overdue."""
+    """Replay a plausible review history for every card, then leave a few cards overdue.
+
+    Each card follows the SM-2 chain from the day after it was solved up to today. The simulated
+    user occasionally skips a review (the card then stays overdue); answer quality depends on how
+    strong the user is in the problem's topics.
+    """
+    zone = user_zone(user)
+    solved_on = {
+        problem_id: local_date(moment, zone)
+        for problem_id, moment in db.execute(
+            select(Solve.problem_id, Solve.solved_at).where(Solve.user_id == user.id)
+        )
+    }
     cards = list(db.scalars(select(ReviewCard).where(ReviewCard.user_id == user.id)).unique())
     for card in cards:
-        if rng.random() > 0.4:
-            continue
         strength = (
             max(STRENGTH.get(t.name, 0.5) for t in card.problem.tags) if card.problem.tags else 0.5
         )
-        state = sm2.CardState(
-            card.ease, card.interval_days, card.repetitions, card.lapses, card.due_date
-        )
-        review_day = today - timedelta(days=rng.randint(1, 60))
-        for _ in range(rng.randint(1, 3)):
+        state = sm2.new_card(card.due_date)
+        review_day = solved_on[card.problem_id] + timedelta(days=1)
+        while review_day <= today and rng.random() > SKIP_PROBABILITY:
             quality = rng.choices([1, 3, 4, 5], weights=[1 - strength, 1, 1 + strength, strength])[
                 0
             ]
@@ -135,23 +144,29 @@ def _simulate_reviews(
             db.add(
                 ReviewLog(
                     card_id=card.id,
-                    reviewed_at=now - timedelta(days=(today - review_day).days),
+                    reviewed_at=datetime.combine(review_day, time(18, 0), tzinfo=zone).astimezone(
+                        UTC
+                    ),
                     quality=quality,
                     interval_after=state.interval_days,
                     ease_after=state.ease,
                 )
             )
-            review_day += timedelta(days=state.interval_days)
-        card.ease, card.interval_days = state.ease, state.interval_days
-        card.repetitions, card.lapses, card.due_date = (
-            state.repetitions,
-            state.lapses,
-            state.due_date,
-        )
-        card.last_reviewed_at = now - timedelta(days=1)
+            card.last_reviewed_at = datetime.combine(review_day, time(18, 0), tzinfo=zone)
+            review_day = state.due_date
+        if state.repetitions or state.lapses:
+            card.ease, card.interval_days = state.ease, state.interval_days
+            card.repetitions, card.lapses, card.due_date = (
+                state.repetitions,
+                state.lapses,
+                state.due_date,
+            )
+        else:  # never reviewed: first review is due the day after solving (or today)
+            card.due_date = max(solved_on[card.problem_id] + timedelta(days=1), today)
 
-    # A handful of clearly overdue cards, so the review queue is not empty on first login.
-    for k, card in enumerate(rng.sample(cards, min(OVERDUE_CARDS, len(cards))), start=1):
+    # Guarantee a handful of clearly overdue cards for the demo.
+    upcoming = [c for c in cards if c.due_date >= today]
+    for k, card in enumerate(rng.sample(upcoming, min(OVERDUE_CARDS, len(upcoming))), start=1):
         card.due_date = today - timedelta(days=k)
 
 

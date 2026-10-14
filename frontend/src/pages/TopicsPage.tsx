@@ -100,6 +100,7 @@ export default function TopicsPage() {
                       }}
                     />
                     <Bar
+                      isAnimationActive={false}
                       dataKey="solved"
                       name="Решено"
                       fill="var(--accent)"
@@ -118,6 +119,7 @@ export default function TopicsPage() {
                     <PolarAngleAxis dataKey="tag" tick={{ fill: "var(--muted)", fontSize: 11 }} />
                     <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
                     <Radar
+                      isAnimationActive={false}
                       dataKey="strength"
                       name="Уверенность"
                       stroke="var(--accent)"
