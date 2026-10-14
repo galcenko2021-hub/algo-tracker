@@ -2,7 +2,7 @@ from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi.errors import RateLimitExceeded
 
-from app.api import auth, me, solves, stats
+from app.api import auth, me, reviews, solves, stats
 from app.config import get_settings
 from app.ratelimit import limiter, rate_limit_handler
 
@@ -35,6 +35,7 @@ def create_app() -> FastAPI:
     api.include_router(solves.router)
     api.include_router(solves.tags_router)
     api.include_router(stats.router)
+    api.include_router(reviews.router)
     app.include_router(api)
     return app
 

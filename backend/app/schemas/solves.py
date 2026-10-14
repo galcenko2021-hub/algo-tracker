@@ -1,4 +1,4 @@
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from typing import Any
 
 from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field, TypeAdapter, field_validator
@@ -36,8 +36,6 @@ def _as_utc(value: datetime | None) -> datetime | None:
         return None
     if value.tzinfo is None:
         value = value.replace(tzinfo=UTC)
-    if value > datetime.now(UTC) + timedelta(days=1):
-        raise ValueError("Дата решения не может быть в будущем")
     return value.astimezone(UTC)
 
 

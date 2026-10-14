@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, Query, Response, status
 from sqlalchemy import ColumnElement, exists, func, or_, select
 from sqlalchemy.orm import Session
 
-from app.api.deps import CurrentUser, DbSession
+from app.api.deps import CurrentUser, DbSession, Now, local_today
 from app.models import (
     AttemptStat,
     Platform,
@@ -37,8 +37,15 @@ def _get_own_solve(db: Session, user: User, solve_id: int) -> Solve:
     return solve
 
 
+def _reject_future(solved_at: datetime | None, now: Now) -> None:
+    # one day of slack covers clients in time zones ahead of the server
+    if solved_at is not None and solved_at > now + timedelta(days=1):
+        raise HTTPException(422, "Дата решения в будущем")
+
+
 @router.post("", response_model=SolveOut, status_code=status.HTTP_201_CREATED)
-def add_solve(body: SolveCreate, user: CurrentUser, db: DbSession) -> Solve:
+def add_solve(body: SolveCreate, user: CurrentUser, db: DbSession, now: Now) -> Solve:
+    _reject_future(body.solved_at, now)
     problem = get_or_create_problem(
         db,
         platform=body.platform,
@@ -57,6 +64,8 @@ def add_solve(body: SolveCreate, user: CurrentUser, db: DbSession) -> Solve:
             source=SolveSource.manual,
             time_spent_min=body.time_spent_min,
             notes=body.notes,
+            today=local_today(now, user),
+            now=now,
         )
         db.commit()
     except DuplicateSolveError:
@@ -129,7 +138,10 @@ def list_solves(
 
 
 @router.patch("/{solve_id}", response_model=SolveOut)
-def patch_solve(solve_id: int, body: SolvePatch, user: CurrentUser, db: DbSession) -> Solve:
+def patch_solve(
+    solve_id: int, body: SolvePatch, user: CurrentUser, db: DbSession, now: Now
+) -> Solve:
+    _reject_future(body.solved_at, now)
     solve = _get_own_solve(db, user, solve_id)
     fields = body.model_fields_set
     if body.solved_at is not None:

@@ -96,6 +96,7 @@ def create_solve(
     time_spent_min: int | None = None,
     notes: str | None = None,
     today: date | None = None,
+    now: datetime | None = None,
 ) -> Solve:
     """Add a solve and its review card. Raises DuplicateSolveError if already solved."""
     exists = db.scalar(
@@ -104,8 +105,8 @@ def create_solve(
     if exists is not None:
         raise DuplicateSolveError
     zone = user_zone(user)
-    moment = solved_at or datetime.now(UTC)
-    today = today or datetime.now(UTC).astimezone(zone).date()
+    moment = solved_at or now or datetime.now(UTC)
+    today = today or (now or datetime.now(UTC)).astimezone(zone).date()
     solve = Solve(
         user_id=user.id,
         problem_id=problem.id,
