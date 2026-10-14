@@ -4,10 +4,14 @@ from collections.abc import Iterator
 import pytest
 from alembic import command
 from alembic.config import Config
+from fastapi.testclient import TestClient
 from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.db import get_db
+from app.main import app
 from app.models import Base
+from app.ratelimit import limiter
 
 TEST_DATABASE_URL = os.environ.get(
     "TEST_DATABASE_URL", "postgresql+psycopg://algo:algo@localhost:5432/algo_test"
@@ -31,7 +35,7 @@ def engine() -> Iterator[Engine]:
 @pytest.fixture(autouse=True)
 def _clean_db(request: pytest.FixtureRequest) -> Iterator[None]:
     """Truncate every table before a test that touches the DB."""
-    if "engine" not in request.fixturenames and "db" not in request.fixturenames:
+    if not {"engine", "db", "client"} & set(request.fixturenames):
         yield
         return
     engine: Engine = request.getfixturevalue("engine")
@@ -46,3 +50,45 @@ def db(engine: Engine) -> Iterator[Session]:
     factory = sessionmaker(bind=engine, expire_on_commit=False)
     with factory() as session:
         yield session
+
+
+@pytest.fixture(autouse=True)
+def _no_rate_limit() -> Iterator[None]:
+    """Auth endpoints are limited to 10/min per IP; only the dedicated test turns it on."""
+    limiter.enabled = False
+    limiter.reset()
+    yield
+    limiter.enabled = False
+
+
+@pytest.fixture
+def client(engine: Engine) -> Iterator[TestClient]:
+    factory = sessionmaker(bind=engine, expire_on_commit=False)
+
+    def override_db() -> Iterator[Session]:
+        with factory() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = override_db
+    with TestClient(app) as test_client:
+        yield test_client
+    app.dependency_overrides.clear()
+
+
+def register(client: TestClient, email: str, password: str = "password123") -> dict[str, str]:
+    """Register + log in; returns Authorization headers."""
+    res = client.post("/api/auth/register", json={"email": email, "password": password})
+    assert res.status_code == 201, res.text
+    res = client.post("/api/auth/login", json={"email": email, "password": password})
+    assert res.status_code == 200, res.text
+    return {"Authorization": f"Bearer {res.json()['access_token']}"}
+
+
+@pytest.fixture
+def user_a(client: TestClient) -> dict[str, str]:
+    return register(client, "a@example.com")
+
+
+@pytest.fixture
+def user_b(client: TestClient) -> dict[str, str]:
+    return register(client, "b@example.com")
