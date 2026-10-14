@@ -1,1 +1,87 @@
 @import "tailwindcss";
+
+/* Dark by default, light follows prefers-color-scheme. One accent colour (sky blue). */
+:root {
+  color-scheme: dark;
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface-2: #1f2630;
+  --line: #30363d;
+  --fg: #e6edf3;
+  --muted: #8b949e;
+  --accent: #38bdf8;
+  --accent-fg: #04121c;
+  --danger: #f87171;
+  --ok: #4ade80;
+  /* Heatmap: one hue, five steps that differ in lightness (safe for colour-blind users). */
+  --heat-0: #1b222c;
+  --heat-1: #0c4a6e;
+  --heat-2: #0369a1;
+  --heat-3: #0ea5e9;
+  --heat-4: #bae6fd;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --bg: #f6f8fa;
+    --surface: #ffffff;
+    --surface-2: #eef1f4;
+    --line: #d0d7de;
+    --fg: #1f2328;
+    --muted: #59636e;
+    --accent: #0369a1;
+    --accent-fg: #ffffff;
+    --danger: #cf222e;
+    --ok: #1a7f37;
+    --heat-0: #e6ebf0;
+    --heat-1: #bae6fd;
+    --heat-2: #38bdf8;
+    --heat-3: #0284c7;
+    --heat-4: #0c4a6e;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-danger: var(--danger);
+  --color-ok: var(--ok);
+  --font-mono: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

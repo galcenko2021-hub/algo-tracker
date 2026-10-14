@@ -1,3 +1,59 @@
+import { QueryClientProvider } from "@tanstack/react-query";
+import { useState } from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import AuthProvider from "./components/AuthProvider";
+import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { createQueryClient } from "./lib/query-client";
+import AuthPage from "./pages/AuthPage";
+import DashboardPage from "./pages/DashboardPage";
+import RecommendationsPage from "./pages/RecommendationsPage";
+import ReviewsPage from "./pages/ReviewsPage";
+import SettingsPage from "./pages/SettingsPage";
+import SolvesPage from "./pages/SolvesPage";
+import TopicsPage from "./pages/TopicsPage";
+
+export function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/login" element={<AuthPage mode="login" />} />
+      <Route path="/register" element={<AuthPage mode="register" />} />
+      <Route element={<ProtectedRoute />}>
+        <Route element={<Layout />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="solves" element={<SolvesPage />} />
+          <Route path="topics" element={<TopicsPage />} />
+          <Route path="reviews" element={<ReviewsPage />} />
+          <Route path="recommendations" element={<RecommendationsPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+        </Route>
+      </Route>
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+}
+
+function NotFound() {
+  return (
+    <div className="mx-auto max-w-sm p-10 text-center">
+      <p className="font-mono text-2xl">404</p>
+      <p className="mt-2 text-muted">Такой страницы нет.</p>
+      <a href="/" className="mt-4 inline-block text-accent underline">
+        На главную
+      </a>
+    </div>
+  );
+}
+
 export default function App() {
-  return <h1>algo-tracker</h1>;
+  const [queryClient] = useState(createQueryClient);
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
 }
