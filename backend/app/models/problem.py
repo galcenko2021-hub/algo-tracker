@@ -44,4 +44,6 @@ class Problem(Base):
     rating: Mapped[int | None]
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
-    tags: Mapped[list[Tag]] = relationship(secondary=problem_tags, order_by=Tag.name)
+    tags: Mapped[list[Tag]] = relationship(
+        secondary=problem_tags, order_by=Tag.name, lazy="selectin"
+    )
