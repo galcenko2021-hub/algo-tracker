@@ -14,6 +14,35 @@ const WEEKDAY_LABELS: [number, string][] = [
   [4, "Пт"],
 ];
 
+/** Room a tooltip needs on each side of its cell before it would be clipped (px). */
+const EDGE_ROOM = 80;
+
+/**
+ * The scroll container clips anything outside the grid, so the tooltip flips below the cell
+ * on the top rows and hugs the cell instead of centring on it near the left and right edges.
+ */
+function Tooltip({ cell, weeks }: { cell: Cell; weeks: number }) {
+  const x = LEFT + cell.week * STEP;
+  const below = cell.weekday <= 1;
+  const nearLeft = cell.week * STEP < EDGE_ROOM;
+  const nearRight = (weeks - 1 - cell.week) * STEP < EDGE_ROOM;
+
+  const left = nearLeft ? x : nearRight ? x + CELL : x + CELL / 2;
+  const shiftX = nearLeft ? "0" : nearRight ? "-100%" : "-50%";
+  const top = below ? TOP + cell.weekday * STEP + CELL + 6 : TOP + cell.weekday * STEP - 6;
+  const shiftY = below ? "0" : "-100%";
+
+  return (
+    <div
+      role="tooltip"
+      className="pointer-events-none absolute z-10 whitespace-nowrap rounded-md bg-fg px-2 py-1 text-xs font-medium text-bg shadow-sm"
+      style={{ left, top, transform: `translate(${shiftX}, ${shiftY})` }}
+    >
+      {cellLabel(cell)}
+    </div>
+  );
+}
+
 interface HeatmapProps {
   days: HeatmapDay[];
   /** Last day shown (the user's local "today"), YYYY-MM-DD. */
@@ -122,18 +151,7 @@ export default function Heatmap({ days, end, weeks = 53 }: HeatmapProps) {
               />
             ))}
           </svg>
-          {active && (
-            <div
-              role="tooltip"
-              className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-md bg-fg px-2 py-1 text-xs font-medium text-bg shadow-sm"
-              style={{
-                left: LEFT + active.week * STEP + CELL / 2,
-                top: TOP + active.weekday * STEP - 6,
-              }}
-            >
-              {cellLabel(active)}
-            </div>
-          )}
+          {active && <Tooltip cell={active} weeks={weeks} />}
         </div>
       </div>
       <div
